@@ -12,12 +12,20 @@ public class ReadApi extends Thread {
     private String API_URL;
     private int k;
     private Map<String, Integer> commonWords = new HashMap<String, Integer>();
-    private Map<String, Integer> wordsInYear = new HashMap<String, Integer>();
+    private Map<String, Integer> averageWordsInYear = new HashMap<String, Integer>();
 
     public ReadApi(String year, int k) {
         this.year = year;
         this.k = k;
         API_URL = "http://numbersapi.com/" + year + "/year";
+    }
+
+    public Map<String, Integer> getCommonWords() {
+        return commonWords;
+    }
+
+    public Map<String, Integer> getAverageWordsInYear() {
+        return averageWordsInYear;
     }
 
     @Override
@@ -26,8 +34,10 @@ public class ReadApi extends Thread {
             countWords(loadDataFromUrl());
         }
 
+        calcAverageWordsInYear();
+
 //        System.out.println(commonWords);
-//        System.out.println(wordsInYear.get(year));
+//        System.out.println(averageWordsInYear.get(year));
     }
 
     /**
@@ -65,12 +75,18 @@ public class ReadApi extends Thread {
     }
 
     private void addWordsCounterInYear(int counter) {
-        if(wordsInYear.containsKey(year)) {
-            int sum = wordsInYear.get(year) + counter;
-            wordsInYear.put(year, sum);
+        if(averageWordsInYear.containsKey(year)) {
+            int sum = averageWordsInYear.get(year) + counter;
+            averageWordsInYear.put(year, sum);
         } else {
-            wordsInYear.put(year, counter);
+            averageWordsInYear.put(year, counter);
         }
+    }
+
+    private void calcAverageWordsInYear() {
+        int average = averageWordsInYear.get(year) / k;
+
+        averageWordsInYear.put(year, average);
     }
 
     private void countWords(String text) {
@@ -89,6 +105,7 @@ public class ReadApi extends Thread {
             }
         }
 
+        // Προσθήκη του πλήθους λέξεων στο έτος
         addWordsCounterInYear(words.length);
     }
 }
