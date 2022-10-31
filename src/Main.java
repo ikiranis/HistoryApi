@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    private static final int maxThreads = 1;    // Μέγιστος αριθμός threads, σε δυνάμεις του 2
+    private static final int maxThreads = 2;    // Μέγιστος αριθμός threads, σε δυνάμεις του 2
     private static ReadApi[] processes;
     private static Random random = new Random();
 
@@ -18,9 +18,20 @@ public class Main {
      * @param k
      */
     private static void startThreads(String year, int k) {
-        for(int i=0; i<processes.length; i++) {
-            processes[i] = new ReadApi(year, k);
+        int processesLength = processes.length;
+
+        if(k % processes.length != 0) {
+            processesLength = processes.length - 1;
+        }
+
+        for(int i=0; i<processesLength; i++) {
+            processes[i] = new ReadApi(year, k / processes.length);
             processes[i].start();
+        }
+
+        if(processesLength != processes.length) {
+            processes[processesLength] = new ReadApi(year, (k / processes.length) + 1);
+            processes[processesLength].start();
         }
     }
 
@@ -61,7 +72,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int k = random.nextInt(20);
+        int max = (int) Math.pow(2, maxThreads) * 10;
+        int min = (int) Math.pow(2, maxThreads) * 2;
+        int k = random.nextInt(max + 1 - min) + min;
 
         // Δοκιμή επεξεργασίας με διαφορετικό πλήθος threads
         for (int i=0; i<=maxThreads; i++) {

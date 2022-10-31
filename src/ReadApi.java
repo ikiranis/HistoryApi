@@ -30,14 +30,15 @@ public class ReadApi extends Thread {
 
     @Override
     public void run() {
+        System.out.println(Thread.currentThread().getName() + " started. Επεξεργασία " + k + " κλήσεων");
+
         for(int i=0;i<k;i++) {
             countWords(loadDataFromUrl());
         }
 
         calcAverageWordsInYear();
 
-//        System.out.println(commonWords);
-//        System.out.println(averageWordsInYear.get(year));
+        System.out.println(Thread.currentThread().getName() + " finished");
     }
 
     /**
