@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    private static final int maxThreads = 2;    // Μέγιστος αριθμός threads, σε δυνάμεις του 2
+    private static final int maxThreads = 3;    // Μέγιστος αριθμός threads, σε δυνάμεις του 2
     private static ReadApi[] processes;
     private static Random random = new Random();
 
@@ -18,20 +18,17 @@ public class Main {
      * @param k
      */
     private static void startThreads(String year, int k) {
-        int processesLength = processes.length;
+        for(int i=0; i<processes.length; i++) {
+            int batchSize = k / processes.length;
 
-        if(k % processes.length != 0) {
-            processesLength = processes.length - 1;
-        }
+            // Στο τελευταίο thread αν έχουμε υπόλοιπο στο k/processes.length
+            // (δηλαδή έχουμε μονό αριθμό κλήσεων) προστίθεται το υπόλοιπο (δηλαδή το 1)
+            if(i == processes.length - 1) {
+                batchSize = batchSize + (k % processes.length);
+            }
 
-        for(int i=0; i<processesLength; i++) {
-            processes[i] = new ReadApi(year, k / processes.length);
+            processes[i] = new ReadApi(year, batchSize);
             processes[i].start();
-        }
-
-        if(processesLength != processes.length) {
-            processes[processesLength] = new ReadApi(year, (k / processes.length) + 1);
-            processes[processesLength].start();
         }
     }
 
