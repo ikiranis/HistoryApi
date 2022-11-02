@@ -58,14 +58,21 @@ public class Main {
                 });
     }
 
-    private static void addNewDataFromProcesses() {
+    private static void addNewDataFromProcesses(String year, int k) {
         // Αρχικοποίηση hashmaps
         commonWords = new HashMap<>();
         averageWordsInYear = new HashMap<>();
 
+        int sum = 0;
+
         for (ReadApi process: processes) {
             addNewProcessData(process.getCommonWords(), commonWords);
+            sum += process.getAverageWordsInYear();
+
+            System.out.println(process.getAverageWordsInYear());
         }
+
+        averageWordsInYear.put(year, (sum / processes.length));
     }
 
     public static void main(String[] args) {
@@ -96,9 +103,10 @@ public class Main {
             // Τερματισμός του χρόνου επεξεργασίας
             long end = System.currentTimeMillis();
 
-            addNewDataFromProcesses();
+            addNewDataFromProcesses("1942", k);
 
             System.out.println(commonWords);
+            System.out.println(averageWordsInYear);
 
             System.out.println("\nΧρονική διάρκεια επεξεργασίας: " + (end - start) + "msec");
         }
