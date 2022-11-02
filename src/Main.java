@@ -10,6 +10,7 @@ public class Main {
 
     private static Map<String, Integer> commonWords;
     private static Map<String, Integer> averageWordsInYear;
+    private static ArrayList<String> years = new ArrayList<>();
 
     /**
      * Εκκίνηση όλων των threads, περνώντας τις αντίστοιχες παραμέτρους δεδομένων σε κάθε ένα
@@ -58,27 +59,40 @@ public class Main {
                 });
     }
 
-    private static void addNewDataFromProcesses(String year, int k) {
+    private static void addNewDataFromProcesses(String year) {
         // Αρχικοποίηση hashmaps
         commonWords = new HashMap<>();
-        averageWordsInYear = new HashMap<>();
 
         int sum = 0;
 
         for (ReadApi process: processes) {
             addNewProcessData(process.getCommonWords(), commonWords);
             sum += process.getAverageWordsInYear();
-
-            System.out.println(process.getAverageWordsInYear());
         }
 
         averageWordsInYear.put(year, (sum / processes.length));
+    }
+
+    private static void generateYears() {
+        int numberOfYears = random.nextInt(5);
+
+        for(int i=0;i<numberOfYears;i++) {
+            int year = random.nextInt(2023 - 1900) + 1900;
+
+            if(!years.contains(String.valueOf(year))) {
+                years.add(String.valueOf(year));
+            }
+        }
+
+        System.out.println(years);
     }
 
     public static void main(String[] args) {
         int max = (int) Math.pow(2, maxThreads) * 10;
         int min = (int) Math.pow(2, maxThreads) * 2;
         int k = random.nextInt(max + 1 - min) + min;
+
+        generateYears();
 
         // Δοκιμή επεξεργασίας με διαφορετικό πλήθος threads
         for (int i=0; i<=maxThreads; i++) {
@@ -87,28 +101,36 @@ public class Main {
             // Αρχικοποίηση του array των threads με την κλάση HammingCalculator
             processes = new ReadApi[threadsNumber];
 
-            System.out.println("\n==================================================================");
-            System.out.println("Επεξεργασία " + k + " κλήσεων, με "
-                    + threadsNumber
-                    + ((threadsNumber>1) ? " threads" : " thread")
-                    + "\n");
+            averageWordsInYear = new HashMap<>();
 
-            // Αρχικοποίηση του χρόνου που αρχίζει η επεξεργασία
-            long start = System.currentTimeMillis();
+            for(String year : years) {
+                // Αρχικοποίηση του χρόνου που αρχίζει η επεξεργασία
+                long start = System.currentTimeMillis();
 
-            startThreads("1942", k);
+                System.out.println("\n==================================================================");
+                System.out.println("Επεξεργασία " + k + " κλήσεων, για το έτος " + year + ", με "
+                        + threadsNumber
+                        + ((threadsNumber>1) ? " threads" : " thread")
+                        + "\n");
 
-            waitThreads();
+                startThreads(year, k);
 
-            // Τερματισμός του χρόνου επεξεργασίας
-            long end = System.currentTimeMillis();
+                waitThreads();
 
-            addNewDataFromProcesses("1942", k);
+                // Τερματισμός του χρόνου επεξεργασίας
+                long end = System.currentTimeMillis();
 
-            System.out.println(commonWords);
+                addNewDataFromProcesses(year);
+
+                System.out.println(commonWords);
+
+                System.out.println("\nΧρονική διάρκεια επεξεργασίας: " + (end - start) + "msec");
+            }
+
+
             System.out.println(averageWordsInYear);
 
-            System.out.println("\nΧρονική διάρκεια επεξεργασίας: " + (end - start) + "msec");
+
         }
 
 
