@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Main {
     private static final int maxThreads = 3;    // Μέγιστος αριθμός threads, σε δυνάμεις του 2
@@ -74,7 +71,7 @@ public class Main {
     }
 
     private static void generateYears() {
-        int numberOfYears = random.nextInt(5);
+        int numberOfYears = random.nextInt(5) + 1;
 
         for(int i=0;i<numberOfYears;i++) {
             int year = random.nextInt(2023 - 1900) + 1900;
@@ -85,6 +82,24 @@ public class Main {
         }
 
         System.out.println(years);
+    }
+
+    private static void printWordsInYear() {
+        System.out.println("\nΣυχνότητα λέξεων στο έτος");
+        System.out.println("--------------------------");
+        for(Map.Entry<String, Integer> word : commonWords.entrySet()) {
+            System.out.printf("Η λέξη \"%s\", βρέθηκε %s φορές\n", word.getKey(), word.getValue());
+        }
+    }
+
+    private static void printYearWithBiggerAverage() {
+        System.out.println("-------------------------------------------------------------");
+        averageWordsInYear.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(1)
+                .forEachOrdered(year ->
+                        System.out.printf("To έτος \"%s\", έχει τον μεγαλύτερο μέσο όρο λέξεων με %s\n", year.getKey(), year.getValue()));
     }
 
     public static void main(String[] args) {
@@ -122,14 +137,13 @@ public class Main {
 
                 addNewDataFromProcesses(year);
 
-                System.out.println(commonWords);
+                printWordsInYear();
 
                 System.out.println("\nΧρονική διάρκεια επεξεργασίας: " + (end - start) + "msec");
             }
 
-
             System.out.println(averageWordsInYear);
-
+            printYearWithBiggerAverage();
 
         }
 
