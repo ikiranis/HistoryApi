@@ -2,15 +2,15 @@ import java.util.*;
 
 public class Main {
     private static final int maxThreads = 3;    // Μέγιστος αριθμός threads, σε δυνάμεις του 2
-    private static ReadApi[] processes;
+    private static ReadApi[] processes;         // Τα processes που θα τρέξουν
     private static Random random = new Random();
 
-    private static Map<String, Integer> commonWords;
-    private static Map<String, Integer> averageWordsInYear;
-    private static ArrayList<String> years = new ArrayList<>();
+    private static Map<String, Integer> commonWords;        // Οι λέξεις που βρέθηκαν με τη συχνότητα τους
+    private static Map<String, Integer> averageWordsInYear;     // Μέσος όρος λέξεων ανα έτος
+    private static ArrayList<String> years = new ArrayList<>();     // Η λίστα με τα έτη, στα οποία θα γίνουν οι κλήσεις
 
-    private static int k;
-    private static int n;
+    private static int k;   // Το πλήθος των κλήσεων
+    private static int n;   // Το πλήθος των ετών
 
     /**
      * Εκκίνηση όλων των threads, περνώντας τις αντίστοιχες παραμέτρους δεδομένων σε κάθε ένα
@@ -73,9 +73,10 @@ public class Main {
      * @param year
      */
     private static void addNewDataFromProcesses(String year) {
-        // Αρχικοποίηση hashmaps
+        // Αρχικοποίηση hashmap
         commonWords = new HashMap<>();
 
+        // Μετράει συνολικά τους μέσους όρους από όλα τα threads και στο τέλος βρίσκει τον μέσο όρο από αυτά
         int sum = 0;
 
         // Διάβασμα των δεδομένων του κάθε thread
@@ -84,7 +85,7 @@ public class Main {
             sum += process.getAverageWordsInYear();
         }
 
-        // Εύρεση του μέσου όρου λέξεων για το συγκεκριμένο έτος
+        // Μέσος όρος λέξεων από όλες τις κλήσεις και προσθήκη του στο συγκεκριμένο έτος
         averageWordsInYear.put(year, (sum / processes.length));
     }
 
@@ -111,7 +112,7 @@ public class Main {
     }
 
     /**
-     * Εκτύπωση συχνότητας λέξεων στο έτος
+     * Εκτύπωση συχνότητας της κάθε λέξης στο έτος
      */
     private static void printWordsInYear() {
         System.out.println("\nΣυχνότητα λέξεων στο έτος");
@@ -171,8 +172,10 @@ public class Main {
             // Αρχικοποίηση του array των threads με την κλάση HammingCalculator
             processes = new ReadApi[threadsNumber];
 
+            // Αρχικοποίηση του hashmap με ταν μέσο όρο λέξεων, ανά έτος
             averageWordsInYear = new HashMap<>();
 
+            // Κάνει κλήσεις για κάθε ένα έτος
             for(String year : years) {
                 // Αρχικοποίηση του χρόνου που αρχίζει η επεξεργασία
                 long start = System.currentTimeMillis();
