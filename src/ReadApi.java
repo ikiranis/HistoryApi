@@ -8,16 +8,18 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
 public class ReadApi extends Thread {
-    private String year;
-    private String API_URL;
-    private int k;
-    private Map<String, Integer> commonWords = new HashMap<String, Integer>();
-    private int averageWordsInYear;
+    private String year;        // Το έτος για το οποίο θα γίνουν οι κλήσεις
+    private String API_URL;     // Το url στο οποίο θα γίνει η κλήση
+    private int k;              // Ο αριθμός των κλήσεων
+    private int averageWordsInYear;     // Ο μέσος όρος λέξεων που βρέθηκαν, ανα κλήση
+    private int totalWords = 0;     // Το πλήθος των λέξεων που βρέθηκαν
+
+    private Map<String, Integer> commonWords = new HashMap<String, Integer>();  // Οι λέξεις που βρέθηκαν
 
     public ReadApi(String year, int k) {
         this.year = year;
         this.k = k;
-        API_URL = "http://numbersapi.com/" + year + "/year";
+        API_URL = "http://numbersapi.com/" + year + "/year";    // Δημιουργία του url, με βάση το έτος
     }
 
     public Map<String, Integer> getCommonWords() {
@@ -28,14 +30,19 @@ public class ReadApi extends Thread {
         return averageWordsInYear;
     }
 
+    /**
+     * Εκκίνηση thread
+     */
     @Override
     public void run() {
         System.out.println(Thread.currentThread().getName() + " started. Επεξεργασία " + k + " κλήσεων");
 
+        // Κάνει k κλήσεις και μετράει τις λέξεις για την κάθε μία
         for(int i=0;i<k;i++) {
             countWords(loadDataFromUrl());
         }
 
+        // Υπολογισμός του μέσου όρου
         calcAverageWordsInYear();
 
         System.out.println(Thread.currentThread().getName() + " finished");
@@ -67,7 +74,14 @@ public class ReadApi extends Thread {
         return result.toString();
     }
 
+    /**
+     * Παίρνει σε array τις λέξεις που βρίσκονται στο κείμενο
+     *
+     * @param text
+     * @return
+     */
     private String[] getWordsInText(String text) {
+        // Χρήση regex, για να σπάσει το κείμενο σε λέξεις
         return Pattern.compile("\\b(?:\\w|-)+\\b")
                 .matcher(text)
                 .results()
@@ -75,10 +89,18 @@ public class ReadApi extends Thread {
                 .toArray(String[]::new);
     }
 
+    /**
+     * Υπολογισμός μέσου όρου λέξεων στο έτος, για k κλήσεις
+     */
     private void calcAverageWordsInYear() {
-        averageWordsInYear = averageWordsInYear / k;
+        averageWordsInYear = totalWords / k;
     }
 
+    /**
+     * Μέτρηση λέξεων (μέχρι τις χαρακτήρες) στο κείμενο και προσθήκη τους σε hashmap
+     *
+     * @param text
+     */
     private void countWords(String text) {
         String[] words = getWordsInText(text);
 
@@ -86,17 +108,17 @@ public class ReadApi extends Thread {
             word = word.toLowerCase();
 
             if(word.length()<4) {
+                // Αν υπάρχει ήδη η λέξη, αυξάνει τον μετρητή της
                 if(commonWords.containsKey(word)) {
                     int sum = commonWords.get(word) + 1;
                     commonWords.put(word, sum);
-                } else {
+                } else { // Αλλιώς της προσθέτει σαν καινούργια
                     commonWords.put(word, 1);
                 }
             }
         }
 
-        // Προσθήκη του πλήθους λέξεων στο έτος
-        averageWordsInYear += words.length;
-//        addWordsCounterInYear(words.length);
+        // Πρόσθεση του πλήθους λέξεων στο έτος
+        totalWords += words.length;
     }
 }

@@ -9,15 +9,17 @@ public class Main {
     private static Map<String, Integer> averageWordsInYear;
     private static ArrayList<String> years = new ArrayList<>();
 
+    private static int k;
+    private static int n;
+
     /**
      * Εκκίνηση όλων των threads, περνώντας τις αντίστοιχες παραμέτρους δεδομένων σε κάθε ένα
      *
      * @param year
-     * @param k
      */
-    private static void startThreads(String year, int k) {
+    private static void startThreads(String year) {
         for(int i=0; i<processes.length; i++) {
-            int batchSize = k / processes.length;
+            int batchSize = k / processes.length; // Κλήσεις που θα γίνουν ανα thread
 
             // Στο τελευταίο thread αν έχουμε υπόλοιπο στο k/processes.length
             // (δηλαδή έχουμε μονό αριθμό κλήσεων) προστίθεται το υπόλοιπο (δηλαδή το 1)
@@ -43,47 +45,74 @@ public class Main {
         }
     }
 
+    /**
+     * Προσθήκη ενός επιμέρους hashmap στο γενικό
+     *
+     * @param newData
+     * @param data
+     */
     private static void addNewProcessData(Map<String, Integer> newData, Map<String, Integer> data) {
+        // Διαβάζει το κάθε στοιχείο του νέου hashmap
         newData.entrySet()
                 .forEach(x -> {
+                    // Αν το key υπάρχει ήδη στο γενικό hashmap
                     if(data.containsKey(x.getKey())) {
+                        // Υπολογισμός της νέας τιμής, προσθέτοντας την νεά στην παλιά
                         int newValue = data.get(x.getKey()) + x.getValue();
 
                         data.put(x.getKey(), newValue);
-                    } else {
+                    } else { // Αν το key δεν υπάρχει προσθέτουμε νέα εγγραφή
                         data.put(x.getKey(), x.getValue());
                     }
                 });
     }
 
+    /**
+     * Προσθήκη των δεδομένων κάθε thread στα γενικά, για το συγκεκριμένο έτος
+     *
+     * @param year
+     */
     private static void addNewDataFromProcesses(String year) {
         // Αρχικοποίηση hashmaps
         commonWords = new HashMap<>();
 
         int sum = 0;
 
+        // Διάβασμα των δεδομένων του κάθε thread
         for (ReadApi process: processes) {
             addNewProcessData(process.getCommonWords(), commonWords);
             sum += process.getAverageWordsInYear();
         }
 
+        // Εύρεση του μέσου όρου λέξεων για το συγκεκριμένο έτος
         averageWordsInYear.put(year, (sum / processes.length));
     }
 
+    /**
+     * Δημιουργία της λίστας με τα έτη, για τα οποία θα γίνουν οι κλήσεις
+     */
     private static void generateYears() {
-        int numberOfYears = random.nextInt(5) + 1;
+        for(int i=0;i<n;i++) {
+            int year;
 
-        for(int i=0;i<numberOfYears;i++) {
-            int year = random.nextInt(2023 - 1900) + 1900;
+            // Εύρεση τυχαίου έτους, με αποφυγή της εισαγωγής διπλού έτους
+            while (true) {
+                year = random.nextInt(2023 - 1900) + 1900; // Τυχαίο έτος, στο εύρος 1900-2022
 
-            if(!years.contains(String.valueOf(year))) {
-                years.add(String.valueOf(year));
+                // Αν δεν υπάρχει ήδη το έτος, το προσθέτει
+                if(!years.contains(String.valueOf(year))) {
+                    years.add(String.valueOf(year));
+                    break;
+                }
             }
         }
 
-        System.out.println(years);
+        System.out.println("\nΘα γίνουν κλήσεις για τα έτη: " + years);
     }
 
+    /**
+     * Εκτύπωση συχνότητας λέξεων στο έτος
+     */
     private static void printWordsInYear() {
         System.out.println("\nΣυχνότητα λέξεων στο έτος");
         System.out.println("--------------------------");
@@ -92,8 +121,13 @@ public class Main {
         }
     }
 
+    /**
+     * Εκτύπωση του έτους με τον μεγαλύτερο μέσο όρο λέξεων
+     */
     private static void printYearWithBiggerAverage() {
         System.out.println("-------------------------------------------------------------");
+
+        // Κάνει ταξινόμηση και παίρνει το μεγαλύτερο
         averageWordsInYear.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -102,10 +136,31 @@ public class Main {
                         System.out.printf("To έτος \"%s\", έχει τον μεγαλύτερο μέσο όρο λέξεων με %s\n", year.getKey(), year.getValue()));
     }
 
+    /**
+     * Εισαγωγή δεδομένων από τον χρήστη
+     */
+    private static void inputData() {
+        Scanner scanner = new Scanner(System.in);
+
+        // Μέγιστος αριθμός threads που θα φτάσουν να εκτελεστούν
+        int maxThreadsNumber = (int) Math.pow(2, maxThreads);
+
+        // Εισαγωγή αριθμού k, με αμυντικό προγραμματισμό, για να μην δοθεί k μικρότερο του maxThreadsNumber
+        do {
+            System.out.print("\nΔώσε αριθμό κλήσεων (k): ");
+            k = scanner.nextInt();
+
+            if(k < 8) {
+                System.out.println("Ο αριθμός κλήσεων πρέπει να είναι μεγαλύτερος ή ίσος από τα " + maxThreadsNumber + " threads");
+            }
+        } while (k < maxThreadsNumber);
+
+        System.out.print("\nΔώσε αριθμό ετών (n): ");
+        n = scanner.nextInt();
+    }
+
     public static void main(String[] args) {
-        int max = (int) Math.pow(2, maxThreads) * 10;
-        int min = (int) Math.pow(2, maxThreads) * 2;
-        int k = random.nextInt(max + 1 - min) + min;
+        inputData();
 
         generateYears();
 
@@ -128,7 +183,7 @@ public class Main {
                         + ((threadsNumber>1) ? " threads" : " thread")
                         + "\n");
 
-                startThreads(year, k);
+                startThreads(year);
 
                 waitThreads();
 
@@ -142,11 +197,8 @@ public class Main {
                 System.out.println("\nΧρονική διάρκεια επεξεργασίας: " + (end - start) + "msec");
             }
 
-            System.out.println(averageWordsInYear);
             printYearWithBiggerAverage();
-
         }
-
 
     }
 
